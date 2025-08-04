@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade Analytics</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --dark-bg: #0f172a;
+            --sidebar-bg: #1e293b;
+            --card-bg: #ffffff;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --sidebar-width: 260px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: linear-gradient(180deg, var(--sidebar-bg) 0%, #334155 100%);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid #475569;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header h4 {
+            color: #ffffff;
+            margin: 0;
+            font-weight: 600;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .sidebar .nav-link {
+            color: #cbd5e1;
+            padding: 0.6rem 1rem;
+            margin: 0.2rem 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar .nav-link:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: #ffffff;
+            transform: translateX(4px);
+        }
+
+        .sidebar .nav-link.active {
+            background: var(--primary-color);
+            color: #ffffff;
+        }
+
+        .sidebar .nav-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 3px;
+            height: 0;
+            background: var(--primary-color);
+            transform: translateY(-50%);
+            transition: height 0.3s ease;
+        }
+
+        .sidebar .nav-link:hover::before {
+            height: 60%;
+        }
+
+        .content {
+            margin-left: var(--sidebar-width);
+            padding: 1.5rem;
+            transition: margin-left 0.3s ease;
+            width: calc(100% - var(--sidebar-width));
+            max-width: calc(100% - var(--sidebar-width));
+            overflow-x: hidden;
+        }
+
+        .content-header {
+            background: var(--card-bg);
+            border-radius: 0.8rem;
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .content-header h2 {
+            margin: 0;
+            color: var(--dark-bg);
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        .card {
+            border: none;
+            border-radius: 0.8rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-weight: 600;
+            border-radius: 0.8rem 0.8rem 0 0 !important;
+            padding: 0.8rem 1.2rem;
+            font-size: 0.9rem;
+        }
+
+        .card-body {
+            padding: 1.2rem;
+        }
+
+        .stats-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stats-item:last-child {
+            border-bottom: none;
+        }
+
+        .stats-label {
+            font-weight: 500;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            flex: 1;
+        }
+
+        .stats-value {
+            font-weight: 700;
+            color: var(--dark-bg);
+            font-size: 0.9rem;
+            text-align: right;
+        }
+
+        .stats-value.positive {
+            color: var(--success-color);
+        }
+
+        .stats-value.negative {
+            color: var(--danger-color);
+        }
+
+        .table-responsive {
+            max-height: 500px;
+            overflow-y: auto;
+            overflow-x: auto;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .table {
+            margin-bottom: 0;
+            font-size: 0.85rem;
+            min-width: 800px;
+        }
+
+        .table thead th {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            border: none;
+            padding: 0.8rem 0.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+
+        .table tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(37, 99, 235, 0.05);
+        }
+
+        .table td {
+            padding: 0.6rem 0.5rem;
+            border-color: var(--border-color);
+            vertical-align: middle;
+            font-size: 0.8rem;
+        }
+
+        .badge {
+            font-size: 0.7rem;
+            padding: 0.3rem 0.5rem;
+        }
+
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1001;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
+        .analytics-placeholder {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-muted);
+        }
+
+        .analytics-placeholder i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner-border {
+            color: var(--primary-color);
+        }
+
+        /* Responsive Design */
+        @media (min-width: 992px) {
+            .row .col-lg-4 {
+                flex: 0 0 33.333333%;
+                max-width: 33.333333%;
+            }
+        }
+
+        @media (min-width: 768px) and (max-width: 991px) {
+            :root {
+                --sidebar-width: 240px;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .stats-item {
+                padding: 0.4rem 0;
+            }
+            
+            .stats-label {
+                font-size: 0.8rem;
+            }
+            
+            .stats-value {
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .mobile-toggle {
+                display: block;
+            }
+            
+            .sidebar {
+                width: var(--sidebar-width);
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .sidebar-overlay.show {
+                display: block;
+            }
+            
+            .content {
+                margin-left: 0;
+                padding: 1rem;
+                margin-top: 3.5rem;
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .content-header {
+                padding: 1rem;
+            }
+            
+            .content-header h2 {
+                font-size: 1.3rem;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .table-responsive {
+                font-size: 0.8rem;
+                max-height: 400px;
+            }
+            
+            .table {
+                font-size: 0.75rem;
+                min-width: 700px;
+            }
+            
+            .table thead th {
+                padding: 0.6rem 0.3rem;
+                font-size: 0.7rem;
+            }
+            
+            .table td {
+                padding: 0.5rem 0.3rem;
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .content {
+                padding: 0.8rem;
+            }
+            
+            .content-header h2 {
+                font-size: 1.2rem;
+            }
+            
+            .stats-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+                padding: 0.5rem 0;
+            }
+            
+            .stats-label {
+                font-size: 0.8rem;
+            }
+            
+            .stats-value {
+                font-size: 0.9rem;
+            }
+            
+            .table {
+                min-width: 600px;
+            }
+        }
+
+        /* Ensure no horizontal overflow */
+        .container-fluid {
+            padding: 0;
+            margin: 0;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .row {
+            margin: 0;
+            max-width: 100%;
+        }
+
+        .col-lg-4,
+        .col-md-6,
+        .col-md-12 {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+
+        /* Fix for desktop horizontal scrolling */
+        @media (min-width: 1200px) {
+            .content {
+                padding: 1.5rem 1rem;
+            }
+        }
+
+        @media (min-width: 1400px) {
+            .content {
+                padding: 1.5rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Toggle Button -->
+    <button class="mobile-toggle" id="sidebarToggle">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <h4><i class="bi bi-currency-bitcoin me-2"></i>Coin Pairs</h4>
+                </div>
+                <div class="p-2">
+                    <ul class="nav flex-column">
+                        {% for coin_pair in coin_pairs %}
+                        <li class="nav-item">
+                            <a class="nav-link coin-pair" href="#" data-coin-pair="{{ coin_pair.coinpair_name }}">
+                                <i class="bi bi-currency-exchange me-2"></i>{{ coin_pair.coinpair_name }}
+                                {% if coin_pair.is_active %}
+                                    <i class="bi bi-check-circle-fill text-success ms-2" title="Active"></i>
+                                {% else %}
+                                    <i class="bi bi-x-circle-fill text-danger ms-2" title="Inactive"></i>
+                                {% endif %}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="content">
+                <div class="content-header">
+                    <h2><i class="bi bi-graph-up me-2"></i>Trade Analytics</h2>
+                </div>
+                
+                <div id="analytics-content">
+                    <div class="analytics-placeholder">
+                        <i class="bi bi-bar-chart-line"></i>
+                        <h4>Welcome to Trade Analytics</h4>
+                        <p>Select a coin pair from the sidebar to view detailed analytics and trade history.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Mobile sidebar toggle
+            $('#sidebarToggle').click(function() {
+                $('#sidebar').toggleClass('show');
+                $('#sidebarOverlay').toggleClass('show');
+            });
+
+            $('#sidebarOverlay').click(function() {
+                $('#sidebar').removeClass('show');
+                $('#sidebarOverlay').removeClass('show');
+            });
+
+            // Close sidebar when clicking on a link (mobile)
+            $('.coin-pair').click(function() {
+                if (window.innerWidth <= 767) {
+                    $('#sidebar').removeClass('show');
+                    $('#sidebarOverlay').removeClass('show');
+                }
+            });
+
+            function formatNumber(value, decimals) {
+                return value ? Number(value).toLocaleString('en-US', {
+                    minimumFractionDigits: decimals,
+                    maximumFractionDigits: decimals
+                }) : 'N/A';
+            }
+
+            function getResultBadge(result) {
+                if (result === 'win') return '<span class="badge bg-success">Win</span>';
+                if (result === 'lose') return '<span class="badge bg-danger">Lose</span>';
+                return '<span class="badge bg-secondary">N/A</span>';
+            }
+
+            function getSideBadge(side) {
+                if (side === 'Buy') return '<span class="badge bg-primary">Buy</span>';
+                if (side === 'Sell') return '<span class="badge bg-warning">Sell</span>';
+                return '<span class="badge bg-secondary">N/A</span>';
+            }
+
+            function getGainPercentageClass(gain) {
+                if (gain > 0) return 'positive';
+                if (gain < 0) return 'negative';
+                return '';
+            }
+
+            function renderTradesTable(trades) {
+                let tableHtml = `
+                    <div class="table-responsive">
+                        <table id="trades-table" class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th><i class="bi bi-clock"></i> Start</th>
+                                    <th><i class="bi bi-clock-history"></i> Close</th>
+                                    <th><i class="bi bi-currency-dollar"></i> Price</th>
+                                    <th><i class="bi bi-arrow-up-circle"></i> TP</th>
+                                    <th><i class="bi bi-arrow-down-circle"></i> SL</th>
+                                    <th><i class="bi bi-arrow-left-right"></i> Side</th>
+                                    <th><i class="bi bi-trophy"></i> Result</th>
+                                    <th><i class="bi bi-percent"></i> Gain</th>
+                                    <th><i class="bi bi-virtual-reality"></i> Virtual</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                if (trades.length === 0) {
+                    tableHtml += `
+                        <tr>
+                            <td colspan="9" class="text-center py-4">
+                                <i class="bi bi-inbox text-muted" style="font-size: 1.5rem;"></i>
+                                <p class="text-muted mt-2 mb-0">No trades available</p>
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    trades.forEach(trade => {
+                        const startTime = trade.trade_start_time ? 
+                            new Date(trade.trade_start_time).toLocaleDateString() + ' ' + 
+                            new Date(trade.trade_start_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A';
+                        const closeTime = trade.trade_close_time ? 
+                            new Date(trade.trade_close_time).toLocaleDateString() + ' ' + 
+                            new Date(trade.trade_close_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A';
+                        
+                        tableHtml += `
+                            <tr>
+                                <td>${startTime}</td>
+                                <td>${closeTime}</td>
+                                <td>${formatNumber(trade.buy_price, 6)}</td>
+                                <td>${formatNumber(trade.tp, 6)}</td>
+                                <td>${formatNumber(trade.sl, 6)}</td>
+                                <td>${getSideBadge(trade.side)}</td>
+                                <td>${getResultBadge(trade.result)}</td>
+                                <td class="${getGainPercentageClass(trade.gain_percentage)}">
+                                    ${formatNumber(trade.gain_percentage, 2)}%
+                                </td>
+                                <td>
+                                    ${trade.is_virtual ? 
+                                        '<span class="badge bg-info">Yes</span>' : 
+                                        '<span class="badge bg-success">No</span>'
+                                    }
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                tableHtml += `</tbody></table></div>`;
+                return tableHtml;
+            }
+
+            // Handle coin pair click
+            $('.coin-pair').click(function(e) {
+                e.preventDefault();
+                let coinPair = $(this).data('coin-pair');
+                
+                // Remove active class from all links
+                $('.coin-pair').removeClass('active');
+                // Add active class to clicked link
+                $(this).addClass('active');
+                
+                // Show loading
+                $('#analytics-content').html(`
+                    <div class="loading">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading analytics for ${coinPair}...</p>
+                    </div>
+                `);
+                
+                // Fetch analytics via AJAX
+                $.ajax({
+                    url: `/api/trade-analytics/${coinPair}/`,
+                    method: 'GET',
+                    success: function(data) {
+                        console.log('API Response:', data);
+                        
+                        // Update analytics content
+                        let html = `
+                            <div class="mb-3">
+                                <h3><i class="bi bi-graph-up me-2"></i>Analytics for ${coinPair}</h3>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <i class="bi bi-bar-chart me-2"></i>Trade Statistics
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="stats-item">
+                                                <span class="stats-label">Total Trades</span>
+                                                <span class="stats-value">${data.total_trades}</span>
+                                            </div>
+                                            <div class="stats-item bg-success bg-opacity-10 rounded">
+                                                <span class="stats-label">Real Trades</span>
+                                                <span class="stats-value">${data.real_trades}</span>
+                                            </div>
+                                            <div class="stats-item">
+                                                <span class="stats-label">Virtual Trades</span>
+                                                <span class="stats-value">${data.virtual_trades}</span>
+                                            </div>
+                                            <div class="stats-item">
+                                                <span class="stats-label">Max Consecutive Wins</span>
+                                                <span class="stats-value positive">${data.max_consecutive_wins}</span>
+                                            </div>
+                                            <div class="stats-item bg-success bg-opacity-10 rounded">
+                                                <span class="stats-label">Max Consecutive Losses</span>
+                                                <span class="stats-value negative">${data.max_consecutive_losses}</span>
+                                            </div>
+                                            <div class="stats-item">
+                                                <span class="stats-label">Real Win Trades</span>
+                                                <span class="stats-value positive">${data.real_win_trades}</span>
+                                            </div>
+                                            <div class="stats-item bg-alert">
+                                                <span class="stats-label">Real Lose Trades</span>
+                                                <span class="stats-value negative">${data.real_lose_trades}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <i class="bi bi-arrow-left-right me-2"></i>Buy/Sell Statistics
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="stats-item">
+                                                <span class="stats-label">Buy Trades</span>
+                                                <span class="stats-value">${data.buy_total}</span>
+                                            </div>
+                                            <div class="stats-item">
+                                                <span class="stats-label">Buy Wins</span>
+                                                <span class="stats-value positive">${data.buy_win_trades}</span>
+                                            </div>
+                                            <div class="stats-item">
+                                                <span class="stats-label">Buy Losses</span>
+                                                <span class="stats-value negative">${data.buy_lose_trades}</span>
+                                            </div>
+                                            <div class="stats-item">
+                                                <span class="stats-label">Buy Win %</span>
+                                                <span class="stats-value ${data.buy_win_pct >= 50 ? 'positive' : 'negative'}">${data.buy_win_pct}%</span>
+                                            </div>
+                                            <div class="stats-item">
+                                                <span class="stats-label">Sell Trades</span>
+                                                <span class="stats-value">${data.sell_total}</span>
+                                            </div>
+                                            <div class="stats-item">
+                                                <span class="stats-label">Sell Wins</span>
+                                                <span class="stats-value positive">${data.sell_win_trades}</span>
+                                            </div>
+                                            <div class="stats-item">
+                                                <span class="stats-label">Sell Losses</span>
+                                                <span class="stats-value negative">${data.sell_lose_trades}</span>
+                                            </div>
+                                            <div class="stats-item">
+                                                <span class="stats-label">Sell Win %</span>
+                                                <span class="stats-value ${data.sell_win_pct >= 50 ? 'positive' : 'negative'}">${data.sell_win_pct}%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <i class="bi bi-cash-coin me-2"></i>Profit Statistics
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="stats-item">
+                                                <span class="stats-label">Overall Win %</span>
+                                                <span class="stats-value ${data.overall_win_pct >= 50 ? 'positive' : 'negative'}">${data.overall_win_pct}%</span>
+                                            </div>
+                                            <div class="stats-item">
+                                                <span class="stats-label">Net Profit %</span>
+                                                <span class="stats-value ${data.net_profit_pct >= 0 ? 'positive' : 'negative'}">${data.net_profit_pct}%</span>
+                                            </div>
+                                            <div class="stats-item">
+                                                <span class="stats-label">Gross Profit %</span>
+                                                <span class="stats-value ${data.gross_profit_pct >= 0 ? 'positive' : 'negative'}">${data.gross_profit_pct}%</span>
+                                            </div>
+                                            <div class="stats-item">
+                                                <span class="stats-label">Brokerage %</span>
+                                                <span class="stats-value">${data.brokerage_pct}%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="bi bi-table me-2"></i>Trade History
+                                </div>
+                                <div class="card-body p-0">
+                                    ${renderTradesTable(data.trades || [])}
+                                </div>
+                            </div>
+                        `;
+                        $('#analytics-content').html(html);
+                    },
+                    error: function(xhr) {
+                        console.error('AJAX Error:', xhr.responseJSON);
+                        $('#analytics-content').html(`
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                ${xhr.responseJSON?.error || 'Error fetching analytics'}
+                            </div>
+                        `);
+                    }
+                });
+            });
+
+            // Handle window resize
+            $(window).resize(function() {
+                if (window.innerWidth > 767) {
+                    $('#sidebar').removeClass('show');
+                    $('#sidebarOverlay').removeClass('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
