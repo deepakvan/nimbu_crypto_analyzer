@@ -1,0 +1,28 @@
+# Dockerfile
+
+# 1. Use an official Python runtime as a parent image
+FROM python:3.10-slim
+
+# 2. Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# 3. Set the working directory in the container
+WORKDIR /code
+
+# 4. Install system dependencies if needed (e.g., for psycopg2)
+# RUN apt-get update && apt-get install -y ...
+
+# 5. Copy and install requirements
+COPY requirements.txt /code/
+RUN pip install -r requirements.txt
+
+# 6. Copy the rest of your project's code
+COPY . /code/
+
+# 7. Expose the port the app runs on
+EXPOSE 8000
+
+# 8. Define the command to run your app using Gunicorn
+#    Replace 'project_core.wsgi' with your project's wsgi path
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "nimbu_crypto_analyzer.wsgi"]
