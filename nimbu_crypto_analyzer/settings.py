@@ -132,8 +132,8 @@ USE_I18N = True
 USE_TZ = True
 
 
-API_KEY = os.environ.get("API_KEY")
-API_SECRET = os.environ.get("API_SECRET")
+#API_KEY = os.environ.get("API_KEY")
+#API_SECRET = os.environ.get("API_SECRET")
 
 HISTORY_API_KEY = os.environ.get("HISTORY_API_KEY")
 HISTORY_API_SECRET = os.environ.get("HISTORY_API_SECRET")

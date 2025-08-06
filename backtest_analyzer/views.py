@@ -27,8 +27,8 @@ BROKERAGE_RATE = 0.001
 # Binance API credentials (ensure these are stored securely, e.g., in settings.py)
 HISTORY_API_KEY = settings.HISTORY_API_KEY
 HISTORY_API_SECRET = settings.HISTORY_API_SECRET
-#history_client = UMFutures(key=HISTORY_API_KEY, secret=HISTORY_API_SECRET)
-history_client = UMFutures()
+history_client = UMFutures(key=HISTORY_API_KEY, secret=HISTORY_API_SECRET)
+#history_client = UMFutures()
 
 #API_KEY = settings.API_KEY
 #API_SECRET = settings.API_SECRET
@@ -270,12 +270,12 @@ def bot():
     while True:
         try:
             seconds = datetime.datetime.now().second
-            if seconds>5 and seconds<7:
+            if seconds>10 and seconds<15:
                 print(f"Starting backtest for {len(coin_pairs)} coin pairs...")
                 for coin_pair in coin_pairs:
                     hf.process_coin_pair(coin_pair.coinpair_name, history_client)
 
-                print("Backtest completed for all coin pairs. sleeping for 1 hour...")
-                sleep(60*60)  # Sleep for 1 hour before the next iteration previously it was 30 seconds
+                print("Backtest completed for all coin pairs. sleeping for 6 hours...")
+                sleep(6*60*60)  # Sleep for 6 hours before the next iteration previously it was 30 seconds
         except:
             print("Error in bot function Code")
